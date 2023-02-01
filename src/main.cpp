@@ -4,8 +4,6 @@
 #include <sstream>
 #include <exception>
 
-#include <fmt/format.h>
-
 #include <curlpp/Easy.hpp>
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Options.hpp>
@@ -69,11 +67,6 @@ void print_weather(json::value weather_json) {
   try {
     boost::json::object *weather_obj = weather_json.if_object();
     boost::json::array *weather_arr = weather_json.at("weather").if_array();
-    
-    std::cout << "Debug info:\r\n";
-    std::cout << weather_json << std::endl << std::endl;
-    std::cout << weather_obj->capacity() << std::endl;
-    std::cout << weather_arr->capacity() << std::endl;
 
     if (!weather_obj) {
       printf("Error 0x01.\n"
@@ -93,12 +86,12 @@ void print_weather(json::value weather_json) {
     try {
       weather = {
         weather_arr->at(0).at("id").as_int64(),
-        (string)weather_arr->at(0).at("main").as_string().c_str(),
-        (string)weather_arr->at(0).at("description").as_string().c_str()
+        weather_arr->at(0).at("main").as_string().c_str(),
+        weather_arr->at(0).at("description").as_string().c_str()
       };
     } catch (std::exception &e) {
       printf("Error 0x03.\n"
-             "Error in weather array. Error message: %s\n", e.what());
+             "Error in weather array. Error message: %s", e.what());
       exit(EXIT_FAILURE);
     }
 
@@ -111,7 +104,7 @@ void print_weather(json::value weather_json) {
       };
     } catch (std::exception &e) {
       printf("Error 0x04.\n"
-             "Error in weather.main part. Error message: %s\n", e.what());
+             "Error in weather.main part. Error message: %s", e.what());
       exit(EXIT_FAILURE);
     }
 
@@ -123,7 +116,7 @@ void print_weather(json::value weather_json) {
       };
     } catch (std::exception &e) {
       printf("Error 0x05.\n"
-             "Error in wind part. Error message: %s\n", e.what());
+             "Error in wind part. Error message: %s", e.what());
       exit(EXIT_FAILURE);
     }
 
@@ -134,7 +127,7 @@ void print_weather(json::value weather_json) {
         snow.one_h = p->at("1h").as_double();
     } catch (std::exception &e) {
       printf("Error 0x04.\n"
-             "Error in snow structure. Error message: %s\n", e.what());
+             "Error in snow structure. Error message: %s", e.what());
       exit(EXIT_FAILURE);
     }
 
@@ -145,7 +138,7 @@ void print_weather(json::value weather_json) {
         rain.one_h = p->at("1h").as_double();
     } catch (std::exception &e) {
       printf("Error 0x05.\n"
-             "Error in rain structure. Error message: %s\n", e.what());
+             "Error in rain structure. Error message: %s", e.what());
       exit(EXIT_FAILURE);
     }
 
@@ -158,63 +151,47 @@ void print_weather(json::value weather_json) {
         wind,
         snow,
         rain,
-        (string)weather_obj->at("name").as_string().c_str()
+        weather_obj->at("name").as_string().c_str()
       };
     } catch (std::exception &e) {
       printf("Error 0x06.\n"
-             "Error in out_data structure. Error message: %s\n", e.what());
+             "Error in out_data structure. Error message: %s", e.what());
       exit(EXIT_FAILURE);
     }
-    
+
     vector<string> ascii_art;
     try {
-      for (auto code : weather_codes_map) {
-        if (code.first == out_data.weather.id) {
-          ascii_art = code.second;
+      for (int i = 0; i < 20; i++) {
+        if (weather_codes[i].code == out_data.weather.id) {
+          ascii_art = weather_codes[i].ascii_art;
         }
       }
     } catch (std::exception &e) {
       printf("Error 0x07\n"
-             "Error in ascii_art. Error message: %s\n", e.what());
+             "Error in ascii_art. Error message: %s", e.what());
       exit(EXIT_FAILURE);
-    }
-    
-    string format_string[5];
-    double one_h = .0;
-    try {
-      if (out_data.snow.one_h > .0) {
-        one_h = out_data.snow.one_h;
-      } else if (out_data.rain.one_h > .0) {
-        one_h = out_data.rain.one_h;
-      } else {
-        one_h = .0;
-      }
-    } catch (std::exception &e) {
-      one_h = .1;
     }
 
     try {
-      format_string[0] = fmt::format("{} {}\r\n",
-                           ascii_art[0], out_data.weather.descr);
-      format_string[1] = fmt::format("{} {}({}) °C\r\n",
-                           ascii_art[1], out_data.main_s.temp, out_data.main_s.feels_like);
-      format_string[2] = fmt::format("{} {} {}\r\n",
-                           ascii_art[2], "↓", out_data.wind.speed);
-      format_string[3] = fmt::format("{} {} km\r\n",
-                           ascii_art[3], (double)out_data.vis/1000);
-      format_string[4] = fmt::format("{} {}\r\n",
-                           ascii_art[4], one_h);
+      printf("%s %s\n"
+             "%s %.1lf(%.1lf) °C\n"
+             "%s %s %.1lf\n"
+             "%s %.1lf km\n"
+             "%s %.1lf\n",
+             ascii_art[0].c_str(), out_data.weather.descr.c_str(),
+             ascii_art[1].c_str(), out_data.main_s.temp, out_data.main_s.feels_like,
+             ascii_art[2].c_str(), "↓", out_data.wind.speed,
+             ascii_art[3].c_str(), (double)out_data.vis/1000,
+             ascii_art[4].c_str(), (out_data.snow.one_h < out_data.rain.one_h) 
+             ? out_data.rain.one_h : out_data.snow.one_h);
     } catch (std::exception &e) {
       printf("Error 0x08.\n"
-             "Error in print function. Error message: %s\n", e.what());
+             "Error in print function. Error message: %s", e.what());
       exit(EXIT_FAILURE);
     }
-
-    for (string str : format_string)
-      std::cout << str;
   } catch (std::exception &e) {
     printf("Error 0x09.\n"
-           "Error in print_weather function. Error message: %s\n", e.what());
+           "Error in json object. Error message: %s", e.what());
     exit(EXIT_FAILURE);
   }
 }
@@ -227,7 +204,7 @@ int main() {
   string url = "https://api.openweathermap.org/data/2.5/weather"
       "?q=Molodechno"
       "&units=metric"
-      "&appid=4b80dfe088ac9388a9b77d8e4c379924";
+      "&appid=";
 
   try {
     curlpp::Cleanup cleaner;
