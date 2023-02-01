@@ -1,6 +1,4 @@
 #include <stdio.h>
-#include <vector>
-#include <string>
 
 #include "ascii.h"
 
@@ -141,7 +139,7 @@ vector<string> very_cloudy = {
   "             ",
 };
 
-weather_codes_s weather_codes[] = {
+std::map<int, vector<string>> weather_codes_map = {
   // NOTE: Thunderstorm:
   {200, thundery_showers},
   {201, thundery_showers},
