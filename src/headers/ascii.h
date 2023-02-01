@@ -1,14 +1,10 @@
+#include <map>
 #include <vector>
 #include <string>
 
 #ifndef ASCII_H
 #define ASCII_H
 
-struct weather_codes_s {
-    int code;
-    std::vector<std::string> ascii_art;
-};
-
-extern weather_codes_s weather_codes[];
+extern std::map<int, std::vector<std::string>> weather_codes_map;
 
 #endif
