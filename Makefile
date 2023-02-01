@@ -1,6 +1,6 @@
 CXX      := -g++
 CXXFLAGS := -pedantic-errors -Wall -Wextra -Werror -std=gnu++20
-LDFLAGS  := -L/usr/lib -lstdc++ -lm -lcurl -lcurlpp -lfmt
+LDFLAGS  := -L/usr/lib -lstdc++ -lm -lcurl -lcurlpp
 BUILD    := ./build
 OBJ_DIR  := $(BUILD)/objects
 APP_DIR  := $(BUILD)/apps
