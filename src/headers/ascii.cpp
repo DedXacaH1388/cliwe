@@ -140,6 +140,7 @@ vector<string> very_cloudy = {
 };
 
 std::map<int, vector<string>> weather_codes_map = {
+  {0, unknown},
   // NOTE: Thunderstorm:
   {200, thundery_showers},
   {201, thundery_showers},
